@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>自习区 - 北印图书馆3D展览</title>
+  <script type="text/javascript" src="js/util.js"></script>
+  <link rel="stylesheet" href="css/model_pages.css">
+
+  <script type="importmap">
+    {
+        "imports": {
+            "three": "./lib/three.module.js",
+            "@mkkellogg/gaussian-splats-3d": "./lib/gaussian-splats-3d.module.js"
+        }
+    }
+  </script>
+
+
+</head>
+
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="model-nav">
+    <button class="nav-btn back-btn" onclick="openDemo('index', [])">
+      <span class="btn-icon">←</span>
+      返回首页
+    </button>
+    
+    <div class="scene-title">
+      <h2 id="current-scene-title">自习区</h2>
+    </div>
+
+    <div class="nav-actions">
+      <button class="nav-btn info-btn" onclick="toggleInfoPanel()">
+        <span class="btn-icon">ℹ️</span>
+        场景信息
+      </button>
+      <button class="nav-btn scenes-btn" onclick="toggleScenesMenu()">
+        <span class="btn-icon">🔍</span>
+        切换场景
+      </button>
+       <!-- 添加导航按钮 -->
+       <button class="nav-btn navigation-btn" onclick="safeToggleNavigationPanel()">
+        <span class="btn-icon">🗺️</span>
+        场景导航
+    </button>
+    </div>
+  </nav>
+
+  <!-- 场景切换菜单 -->
+  <div id="scenes-menu" class="scenes-menu">
+    <div class="menu-content">
+      <h3>选择探索区域</h3>
+      <div class="menu-scenes">
+        <button class="menu-item" onclick="openDemo('lobby', [['mode', '0']])">
+          <span class="menu-icon">🏛️</span>
+          图书馆大厅
+        </button>
+        <button class="menu-item" onclick="openDemo('reading-area', [['mode', '0']])">
+          <span class="menu-icon">📚</span>
+          阅读区
+        </button>
+        <button class="menu-item" onclick="openDemo('study-area', [['mode', '0']])">
+          <span class="menu-icon">💻</span>
+          自习区
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 信息面板 -->
+  <div id="info-panel" class="info-panel">
+    <div class="panel-header">
+      <h3>场景信息</h3>
+      <button class="close-btn" onclick="toggleInfoPanel()">×</button>
+    </div>
+    <div class="panel-content">
+      <div id="scene-info-content">
+        <h4 id="info-title">自习区</h4>
+        <p id="info-description">北印学子勤奋学习的核心区域。整齐排列的学习桌椅、充足的电源接口和稳定的网络环境，为学生们提供了高效的学习空间。这里见证了无数梦想的孕育和实现，每一个座位上都曾有过奋斗的身影，每一盏灯光下都曾照亮过求知的热情。这里是学术交流与个人成长的重要场所，承载着北印学子的学术追求和青春记忆。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作提示 -->
+  <div class="control-tips">
+    <div class="tip-item">
+      <span class="tip-key">鼠标拖动</span>
+      <span class="tip-desc">旋转视角</span>
+    </div>
+    <div class="tip-item">
+      <span class="tip-key">滚轮</span>
+      <span class="tip-desc">缩放</span>
+    </div>
+    <div class="tip-item">
+      <span class="tip-key">右键拖动</span>
+      <span class="tip-desc">平移</span>
+    </div>
+    <div class="tip-item">
+        <span class="tip-key">空格键</span>
+        <span class="tip-desc">自动导览</span>
+      </div>
+  </div>
+
+<!-- 加载状态 -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>正在加载3D场景...</p>
+  </div>
+
+  <!-- 先加载基础工具 -->
+  <script src="js/page-transitions.js"></script>
+  <script src="js/performance.js"></script>
+  <script src="js/visit-stats.js"></script>
+
+  <!-- 然后加载导航系统 -->
+  <script src="js/navigation/ViewpointManager.js"></script>
+  <script src="js/navigation/NavigationUI.js"></script>
+  <script src="js/navigation/AutoTourSystem.js"></script>
+  <script src="js/navigation/ViewpointTester.js"></script>
+
+  <!-- 首页触发自动导览 -->
+  <script src="js/model_space_tragger.js"></script>
+
+
+  <!-- 最后加载其他功能 -->
+  <script src="js/model_performance_panel.js"></script>
+  <script src="js/model_performance_interact_panel.js"></script>
+  <script src="js/model_page_KeyboardNav.js"></script>
+
+  <script type="module">
+    import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
+    import * as THREE from 'three';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = parseInt(urlParams.get('mode')) || 0;
+
+    // 根据场景模式设置不同的相机参数
+    const sceneConfigs = {
+        0: { // 图书馆大厅
+            cameraUp: [	-0.11184, -0.98483, -0.13264],
+            initialCameraPosition: [		6.12182, -0.67064, 3.39573],
+            initialCameraLookAt: [		2.75802, -0.69324, 0.37014]
+        },
+        1: { // 阅读区
+            cameraUp: [0, -1, -0.54],
+            initialCameraPosition: [-2.5, -0.5, -1.0],
+            initialCameraLookAt: [1.0, 1.5, 1.0]
+        },
+        2: { // 自习区
+            cameraUp: [0, -1, -0.54],
+            initialCameraPosition: [-2.0, -0.3, -1.5],
+            initialCameraLookAt: [0.5, 1.0, 0.5]
+        }
+    };
+
+    const config = sceneConfigs[mode] || sceneConfigs[0];
+
+    const viewer = new GaussianSplats3D.Viewer({
+        'cameraUp': config.cameraUp,
+        'initialCameraPosition': config.initialCameraPosition,
+        'initialCameraLookAt': config.initialCameraLookAt,
+        'sphericalHarmonicsDegree': 2
+    });
+
+    // 根据当前页面动态设置路径
+    const currentScene = window.location.pathname.split('/').pop().replace('.html', '');
+    let path = `assets/data/${currentScene}/${currentScene}` + (mode ? '_high' : '') + '.splat';
+    console.log('📁 模型文件路径:', path);
+    
+    // 全局变量声明
+    let viewpointManager;
+    let navigationUI;
+    let viewpointTester;
+
+    // 初始化导览点系统
+    function initViewpointSystem() {
+        console.log('🎯 开始初始化导览点系统...');
+        
+        if (viewer) {
+            try {
+                // 初始化导览点管理器
+                viewpointManager = new ViewpointManager(viewer);
+                window.viewpointManager = viewpointManager;
+                
+                console.log('✅ 导览点管理器初始化完成');
+
+                // 初始化导航UI
+                navigationUI = new NavigationUI(viewpointManager);
+                window.navigationUI = navigationUI;
+                
+                console.log('✅ 导航UI初始化完成');
+
+                // 初始化自动漫游系统
+                window.autoTourSystem = new AutoTourSystem(viewpointManager, navigationUI);
+                console.log('✅ 自动漫游系统初始化完成');
+
+                // 初始化测试器
+                viewpointTester = new ViewpointTester(viewpointManager);
+                window.viewpointTester = viewpointTester;
+                
+                console.log('✅ 导览点测试器初始化完成');
+                
+            } catch (error) {
+                console.error('❌ 导览点系统初始化失败:', error);
+            }
+        } else {
+            console.error('❌ 无法初始化导览点系统: viewer 未定义');
+        }
+    }
+
+    // 添加加载错误显示函数
+    function showLoadError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            z-index: 10000;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            font-family: 'Microsoft YaHei', sans-serif;
+        `;
+        errorDiv.innerHTML = `
+            <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+            <h3 style="margin: 0 0 1rem 0;">加载失败</h3>
+            <p style="margin: 0 0 1.5rem 0;">${message}</p>
+            <button onclick="location.reload()" style="
+                background: white;
+                color: #ff6b6b;
+                border: none;
+                padding: 0.7rem 1.5rem;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+            ">刷新页面</button>
+        `;
+        document.body.appendChild(errorDiv);
+    }
+
+    // 显示加载状态
+    function showLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+        }
+    }
+
+    // 隐藏加载状态
+    function hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
+        }
+    }
+
+    // 更新场景信息
+    function updateSceneInfo() {
+        const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+        console.log('当前页面:', currentPage);
+        
+        const sceneConfig = {
+            'lobby': {
+                title: '图书馆大厅',
+                description: '宏伟的图书馆大厅，展现了现代建筑美学与实用功能的完美结合。这里是读者进入知识世界的第一站，宽敞的空间和精心设计的光线营造出庄重而温馨的氛围。'
+            },
+            'reading-area': {
+                title: '阅读区',
+                description: '安静舒适的阅读区域，配备专业的阅读灯光和符合人体工学的座椅。这里是深度阅读和思考的理想空间，阳光透过窗户洒在书页上，营造出宁静的阅读体验。'
+            },
+            'study-area': {
+                title: '自习区', 
+                description: '北印学子勤奋学习的核心区域。整齐排列的学习桌椅、充足的电源接口和稳定的网络环境，为学生们提供了高效的学习空间。这里见证了无数梦想的孕育和实现。'
+            }
+        };
+
+        const config = sceneConfig[currentPage] || sceneConfig['lobby'];
+        
+        console.log('更新场景信息:', config.title);
+        
+        document.getElementById('current-scene-title').textContent = config.title;
+        document.getElementById('info-title').textContent = config.title;
+        document.getElementById('info-description').textContent = config.description;
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM加载完成，初始化场景信息');
+        updateSceneInfo();
+        showLoading();
+    });
+
+    // 模型加载
+    console.log('🔄 开始加载3D模型:', path);
+    viewer.addSplatScene(path, {
+        'progressiveLoad': false
+    })
+    .then(() => {
+        console.log('✅ 3D场景加载成功');
+        viewer.start();
+
+        // 确保 viewer 对象全局可用
+        window.viewer = viewer;
+        
+        console.log('🎯 Viewer 状态检查:', {
+            viewer: !!window.viewer,
+            startFunction: typeof viewer.start,
+            camera: !!viewer.camera,
+            position: viewer.getCameraPosition ? '可用' : '不可用'
+        });
+        
+        // 性能监控：场景加载完成
+        if (window.onSceneLoaded) {
+            window.onSceneLoaded();
+        }
+        
+        // 访问统计：记录场景访问
+        const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+        console.log(`📍 当前场景: ${currentPage}`);
+        
+        if (window.visitStats && typeof window.trackSceneVisit === 'function') {
+            window.trackSceneVisit(currentPage);
+        } else {
+            console.error('❌ 访问统计系统未就绪');
+        }
+        
+        // 隐藏加载状态
+        hideLoading();
+        
+        // 延迟初始化导览点系统，确保viewer完全就绪
+        setTimeout(() => {
+            try {
+                initViewpointSystem();
+                console.log('🎉 所有系统初始化完成！');
+            } catch (error) {
+                console.error('❌ 导览点系统初始化失败:', error);
+            }
+        }, 1000);
+        
+    })
+    .catch((error) => {
+        console.error('❌ 模型加载失败:', error);
+        
+        // 隐藏加载状态
+        hideLoading();
+        
+        // 显示错误信息给用户
+        showLoadError('3D场景加载失败，请刷新页面重试');
+    });
+  </script>
+
+  <script>
+    // 安全的导航面板切换函数
+    function safeToggleNavigationPanel() {
+        if (typeof navigationUI !== 'undefined' && navigationUI !== null) {
+            navigationUI.togglePanel();
+        } else {
+            console.error('❌ 导航UI尚未初始化，请等待页面加载完成');
+            showTempMessage('导航功能正在初始化，请稍候...', 'warning');
+        }
+    }
+    
+    // 显示临时消息
+    function showTempMessage(message, type = 'info') {
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'warning' ? 'rgba(255, 213, 59, 0.9)' : 'rgba(79, 172, 254, 0.9)'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            font-family: 'Microsoft YaHei', sans-serif;
+        `;
+        messageDiv.textContent = message;
+        document.body.appendChild(messageDiv);
+        
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 3000);
+    }
+    
+    // 全局测试函数
+    window.testGoToViewpoint = (viewpointId) => {
+        if (window.viewpointTester) {
+            window.viewpointTester.goToViewpoint(viewpointId);
+        } else {
+            console.error('❌ viewpointTester 未初始化');
+        }
+    };
+    
+    window.testNextViewpoint = () => {
+        if (window.viewpointTester) {
+            window.viewpointTester.nextViewpoint();
+        } else {
+            console.error('❌ viewpointTester 未初始化');
+        }
+    };
+    
+    window.testPreviousViewpoint = () => {
+        if (window.viewpointTester) {
+            window.viewpointTester.previousViewpoint();
+        } else {
+            console.error('❌ viewpointTester 未初始化');
+        }
+    };
+    
+    window.runAllTests = () => {
+        if (window.viewpointTester) {
+            window.viewpointTester.runCompleteTestSuite();
+        } else {
+            console.error('❌ viewpointTester 未初始化');
+        }
+    };
+
+    // 导航函数
+    function openDemo(page, params) {
+        let url = page + '.html';
+        if (params && params.length > 0) {
+            let index = 0;
+            for (let param of params) {
+                url += (index === 0 ? "?" : "&");
+                url += param[0] + "=" + param[1];
+                index++;
+            }
+        }
+        console.log('🔗 导航到:', url);
+        window.location.href = url;
+    }
+
+    // UI控制函数
+    function toggleInfoPanel() {
+        const panel = document.getElementById('info-panel');
+        panel.classList.toggle('active');
+    }
+
+    function toggleScenesMenu() {
+        const menu = document.getElementById('scenes-menu');
+        menu.classList.toggle('active');
+    }
+
+    // 点击外部关闭菜单和面板
+    document.addEventListener('click', function(event) {
+        const scenesMenu = document.getElementById('scenes-menu');
+        const infoPanel = document.getElementById('info-panel');
+        
+        if (scenesMenu && scenesMenu.classList.contains('active') && 
+            !event.target.closest('.scenes-menu') && 
+            !event.target.closest('.scenes-btn')) {
+            scenesMenu.classList.remove('active');
+        }
+        
+        if (infoPanel && infoPanel.classList.contains('active') && 
+            !event.target.closest('.info-panel') && 
+            !event.target.closest('.info-btn')) {
+            infoPanel.classList.remove('active');
+        }
+    });
+  </script>
+
+
+<script>
+    // 添加全局停止函数
+function forceStopAllAutoTours() {
+    console.log('🛑 强制停止所有自动导览系统');
+    
+    // 停止 autoTourSystem
+    if (window.autoTourSystem) {
+        console.log('🛑 停止 autoTourSystem');
+        window.autoTourSystem.stopAutoTour();
+    }
+    
+    // 停止 NavigationUI 的导览
+    if (window.navigationUI) {
+        console.log('🛑 停止 navigationUI 导览');
+        window.navigationUI.stopAutoTour();
+    }
+    
+    // 停止 autoSpacebarTrigger 的简单导览
+    if (window.autoSpacebarTrigger) {
+        console.log('🛑 停止 autoSpacebarTrigger 导览');
+        // 如果 autoSpacebarTrigger 有停止方法，调用它
+        if (typeof window.autoSpacebarTrigger.stopAutoTour === 'function') {
+            window.autoSpacebarTrigger.stopAutoTour();
+        }
+    }
+    
+    // 清理所有定时器
+    const maxTimerId = setTimeout(() => {}, 0);
+    for (let i = maxTimerId; i > 0; i--) {
+        clearTimeout(i);
+        clearInterval(i);
+    }
+    
+    console.log('✅ 所有自动导览已强制停止');
+}
+
+// 在页面卸载时自动停止所有导览
+window.addEventListener('beforeunload', function() {
+    console.log('📄 页面即将卸载，停止所有自动导览');
+    forceStopAllAutoTours();
+});
+
+// 添加调试命令到全局
+window.debugAutoTour = function() {
+    console.log('🔍 自动导览调试信息:');
+    console.log('- autoTourSystem:', window.autoTourSystem ? window.autoTourSystem.getStatus() : '未定义');
+    console.log('- navigationUI:', window.navigationUI ? { 
+        isAutoTourRunning: window.navigationUI.isAutoTourRunning,
+        tourInterval: !!window.navigationUI.tourInterval
+    } : '未定义');
+    console.log('- autoSpacebarTrigger:', window.autoSpacebarTrigger ? '已定义' : '未定义');
+};
+
+// 添加强制停止命令到全局
+window.stopAllTours = forceStopAllAutoTours;
+</script>
+
+
+
+
+
+
+</body>
+</html>

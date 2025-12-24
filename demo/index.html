@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北印图书馆 - 3D沉浸式展览</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 检查是否已经完成加载，如果没有完成，则跳转到loading页面 -->
+    <script>
+        // 检查是否从加载页面跳转而来
+        if (!sessionStorage.getItem('loadingCompleted')) {
+            sessionStorage.setItem('loadingCompleted', 'true');
+            window.location.href = 'loading.html';
+        }
+    </script>
+</head>
+
+<body>
+    
+    <div class="container">
+        <!-- 背景装饰 -->
+        <div class="background-gradient"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+
+        <!-- 主内容 -->
+        <header class="header">
+            <h1 class="title">北印图书馆</h1>
+            <p class="subtitle">3D高斯泼溅 · 沉浸式展览</p>
+        </header>
+
+        <main class="main-content">
+            <div class="welcome-section">
+                <p class="welcome-text">
+                    欢迎探索北京印刷学院图书馆的数字孪生空间<br>
+                    前沿的3D重建技术，带您沉浸式体验知识殿堂的魅力
+                </p>
+            </div>
+
+            <div class="scenes-grid">
+                <div class="scene-card">
+                    <!-- 建筑类图标 -->
+                    <div class="card-icon">
+                        <i class="fas fa-university"></i>  <!-- 大学/机构图标 -->
+                    </div>
+                    <div class="card-content">
+                        <h3>图书馆大厅</h3>
+                        <p>宏伟入口空间，展现建筑气势与设计美学</p>
+                        <button class="view-btn" onclick="openDemo('lobby', [['mode', '0']])">进入参观</button>
+                    </div>
+                </div>
+            
+                <div class="scene-card">
+                    <!-- 阅读类图标 -->
+                    <div class="card-icon">
+                        <i class="fas fa-book-reader"></i>  <!-- 阅读者图标 -->
+                    </div>
+                    <div class="card-content">
+                        <h3>阅读区</h3>
+                        <p>安静舒适的阅读环境，适合深度阅读与思考</p>
+                        <button class="view-btn" onclick="openDemo('reading-area', [['mode', '0']])">进入参观</button>
+                    </div>
+                </div>
+            
+                <div class="scene-card">
+                    <!-- 学习类图标 -->
+                    <div class="card-icon">
+                        <i class="fas fa-graduation-cap"></i>  <!-- 毕业帽图标 -->
+                    </div>
+                    <div class="card-content">
+                        <h3>自习区</h3>
+                        <p>学子勤奋学习的核心区域，见证梦想的孕育</p>
+                        <button class="view-btn" onclick="openDemo('study-area', [['mode', '0']])">进入参观</button>
+                    </div>
+                </div>
+            </div>
+  
+            <!-- 在欢迎区域之后，场景网格之前添加特色服务 -->
+<section class="features-section">
+    <h2 class="section-title">图书馆特色服务</h2>
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon">
+            <i class="fas fa-database"></i>  <!-- 改为数据库图标 -->
+        </div>
+        <h3 class="feature-title">数字资源访问</h3>
+        <p class="feature-description">提供丰富的电子图书、期刊和数据库资源，随时随地访问学术资料</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3 class="feature-title">研讨空间</h3>
+        <p class="feature-description">配备先进设备的小组学习空间，支持协作学习和学术讨论</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <i class="fas fa-graduation-cap"></i>
+        </div>
+        <h3 class="feature-title">信息素养培训</h3>
+        <p class="feature-description">定期举办信息检索、学术写作等培训课程，提升读者信息素养</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <i class="fas fa-headset"></i>
+        </div>
+        <h3 class="feature-title">学科服务</h3>
+        <p class="feature-description">专业学科馆员提供针对性的文献检索与学术支持服务</p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- 在场景网格之后，页脚之前添加图书馆信息 -->
+  <section class="library-info-section">
+    <h2 class="section-title">图书馆信息</h2>
+    <div class="library-info-grid">
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="fas fa-clock"></i>
+          <h3>开放时间</h3>
+        </div>
+        <ul class="info-list">
+          <li>
+            <i class="fas fa-calendar-day"></i>
+            <div class="info-content">
+              <strong>周一至周日</strong>
+              <span>8:00-22:00</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-exclamation-circle"></i>
+            <div class="info-content">
+              <strong>节假日</strong>
+              <span>9:00-17:00</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-book"></i>
+            <div class="info-content">
+              <strong>借还服务</strong>
+              <span>8:30-21:30</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="fas fa-map-marker-alt"></i>
+          <h3>联系我们</h3>
+        </div>
+        <ul class="info-list">
+          <li>
+            <i class="fas fa-location-dot"></i>
+            <div class="info-content">
+              <strong>地址</strong>
+              <span>北京市大兴区兴华大街(二段)1号</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-phone"></i>
+            <div class="info-content">
+              <strong>电话</strong>
+              <span>010-60261114</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-envelope"></i>
+            <div class="info-content">
+              <strong>邮箱</strong>
+              <span>library@bigc.edu.cn</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="fas fa-bookmark"></i>
+          <h3>馆藏特色</h3>
+        </div>
+        <ul class="info-list">
+          <li>
+            <i class="fas fa-print"></i>
+            <div class="info-content">
+              <strong>印刷出版</strong>
+              <span>专业文献资源</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-paint-brush"></i>
+            <div class="info-content">
+              <strong>艺术设计</strong>
+              <span>特色馆藏</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-newspaper"></i>
+            <div class="info-content">
+              <strong>数字媒体</strong>
+              <span>前沿资源</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  
+
+        </main>
+
+
+
+
+        
+        <script>
+            // ==================== 预览系统核心代码 ====================
+
+            // 移动设备检测
+            function isMobileDevice() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+
+            // 场景数据配置
+            const SCENE_DATA = {
+                'lobby': {
+                    title: '图书馆大厅',
+                    description: '宏伟的图书馆大厅，展现了现代建筑与实用功能的结合。这里是北印学子进入知识世界的第一站，宽敞的空间和精心设计的光线营造出温馨的氛围。',
+                    area: '280平方米',
+                    capacity: '可容纳70人',
+                    features: '挑高设计、自然采光、智能导览',
+                    image: './assets/images/lobby.png'
+                },
+                'reading-area': {
+                    title: '阅读区',
+                    description: '安静舒适的阅读区域，配备专业的阅读灯光和符合人体工学的座椅。这里是深度阅读和思考的理想空间，阳光透过窗户洒在书页上，营造出宁静的阅读体验。',
+                    area: '100平方米',
+                    capacity: '30个阅读位',
+                    features: '专业照明、舒适座椅、安静环境',
+                    image: './assets/images/read.png'
+                },
+                'study-area': {
+                    title: '自习区',
+                    description: '北印学子勤奋学习的核心区域。整齐排列的学习桌椅、充足的电源接口和稳定的网络环境，为学生们提供了高效的学习空间。这里见证了无数梦想的孕育和实现。',
+                    area: '200平方米',
+                    capacity: '120个学习位',
+                    features: '独立座位、电源接口、高速网络',
+                    image: './assets/images/study.png'
+                }
+            };
+
+            // 预览系统主类
+            class PreviewSystem {
+                constructor() {
+                    this.isInitialized = false;
+                    this.init();
+                }
+
+                init() {
+                    if (this.isInitialized) return;
+                    
+                    console.log('🚀 初始化预览系统...');
+                    this.createPreviewElements();
+                    this.setupEventListeners();
+                    this.isInitialized = true;
+                    console.log('✅ 预览系统初始化完成');
+                }
+
+                createPreviewElements() {
+                    // 创建悬停预览工具提示
+                    this.createHoverTooltip();
+                    
+                    // 创建详情预览模态框
+                    this.createDetailModal();
+                }
+
+                createHoverTooltip() {
+                    const tooltip = document.createElement('div');
+                    tooltip.id = 'preview-hover-tooltip';
+                    tooltip.className = 'preview-tooltip';
+                    tooltip.innerHTML = `
+                        <div class="tooltip-image"></div>
+                        <div class="tooltip-content">
+                            <h4 class="tooltip-title"></h4>
+                            <p class="tooltip-desc"></p>
+                            <div class="tooltip-hint">📱 点击预览按钮查看详情</div>
+                        </div>
+                    `;
+                    document.body.appendChild(tooltip);
+                }
+
+                createDetailModal() {
+                    const modal = document.createElement('div');
+                    modal.id = 'preview-detail-modal';
+                    modal.className = 'preview-modal';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">场景预览</h3>
+                                <button class="modal-close">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="modal-image-container">
+                                    <img class="modal-image" src="" alt="场景预览">
+                                </div>
+                                <div class="modal-info">
+                                    <p class="modal-description"></p>
+                                    <div class="modal-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-icon">🏛️</span>
+                                            <div class="stat-content">
+                                                <div class="stat-label">空间面积</div>
+                                                <div class="stat-value" id="stat-area"></div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-icon">👥</span>
+                                            <div class="stat-content">
+                                                <div class="stat-label">容纳人数</div>
+                                                <div class="stat-value" id="stat-capacity"></div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-icon">⭐</span>
+                                            <div class="stat-content">
+                                                <div class="stat-label">特色功能</div>
+                                                <div class="stat-value" id="stat-features"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="modal-btn modal-btn-primary" id="enter-scene-btn">🚀 进入场景</button>
+                                <button class="modal-btn modal-btn-secondary" id="auto-tour-btn">🎬 自动导览</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }
+
+                setupEventListeners() {
+                    // 关闭模态框事件
+                    const closeBtn = document.querySelector('.modal-close');
+                    const modal = document.getElementById('preview-detail-modal');
+                    
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', () => this.hideDetailModal());
+                    }
+                    
+                    if (modal) {
+                        modal.addEventListener('click', (e) => {
+                            if (e.target === modal) {
+                                this.hideDetailModal();
+                            }
+                        });
+                    }
+
+                    // ESC键关闭
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            this.hideDetailModal();
+                        }
+                    });
+                }
+
+                showHoverPreview(sceneId, element, event) {
+                    if (isMobileDevice()) return;
+                    
+                    const sceneData = SCENE_DATA[sceneId];
+                    if (!sceneData) return;
+
+                    const tooltip = document.getElementById('preview-hover-tooltip');
+                    if (!tooltip) return;
+
+                    // 更新内容
+                    tooltip.querySelector('.tooltip-image').style.backgroundImage = `url(${sceneData.image})`;
+                    tooltip.querySelector('.tooltip-title').textContent = sceneData.title;
+                    tooltip.querySelector('.tooltip-desc').textContent = sceneData.description;
+
+                    // 定位
+                    const rect = element.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    
+                    let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                    let top = rect.bottom + 10;
+
+                    // 边界检查
+                    if (left < 10) left = 10;
+                    if (left + tooltipRect.width > window.innerWidth - 10) {
+                        left = window.innerWidth - tooltipRect.width - 10;
+                    }
+                    if (top + tooltipRect.height > window.innerHeight - 10) {
+                        top = rect.top - tooltipRect.height - 10;
+                    }
+
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                    tooltip.classList.add('active');
+                }
+
+                hideHoverPreview() {
+                    const tooltip = document.getElementById('preview-hover-tooltip');
+                    if (tooltip) {
+                        tooltip.classList.remove('active');
+                    }
+                }
+
+                showDetailModal(sceneId) {
+                    const sceneData = SCENE_DATA[sceneId];
+                    if (!sceneData) return;
+
+                    const modal = document.getElementById('preview-detail-modal');
+                    if (!modal) return;
+
+                    // 更新内容
+                    modal.querySelector('.modal-title').textContent = sceneData.title;
+                    modal.querySelector('.modal-image').src = sceneData.image;
+                    modal.querySelector('.modal-description').textContent = sceneData.description;
+                    document.getElementById('stat-area').textContent = sceneData.area;
+                    document.getElementById('stat-capacity').textContent = sceneData.capacity;
+                    document.getElementById('stat-features').textContent = sceneData.features;
+
+                    // 设置按钮事件
+                    const enterBtn = document.getElementById('enter-scene-btn');
+                    const tourBtn = document.getElementById('auto-tour-btn');
+
+                    enterBtn.onclick = () => {
+                        this.hideDetailModal();
+                        openDemo(sceneId, [['mode', '0']]);
+                    };
+
+                    // 🆕 修复自动导览按钮事件
+                    tourBtn.onclick = () => {
+                        this.hideDetailModal();
+                        console.log(`🚀 启动自动导览: ${sceneData.title}`);
+                        
+                        // 显示加载状态
+                        this.showAutoTourLoading(sceneData.title);
+                        
+                        // 设置自动触发标记
+                        localStorage.setItem('autoTriggerSpacebar', 'true');
+                        localStorage.setItem('autoTriggerScene', sceneId);
+                        localStorage.setItem('autoTriggerTime', Date.now().toString());
+                        
+                        // 构建URL
+                        const params = new URLSearchParams({
+                            mode: '0'
+                        });
+                        
+                        const targetUrl = `${sceneId}.html?${params.toString()}`;
+                        console.log('导航URL:', targetUrl);
+                        
+                        // 延迟跳转
+                        setTimeout(() => {
+                            window.location.href = targetUrl;
+                        }, 1000);
+                    };
+
+                    // 显示模态框
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                hideDetailModal() {
+                    const modal = document.getElementById('preview-detail-modal');
+                    if (modal) {
+                        modal.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                }
+
+                // 🆕 添加自动导览加载提示方法
+                showAutoTourLoading(sceneName) {
+                    const loadingHTML = `
+                        <div id="autotour-loading" style="
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0, 0, 0, 0.9);
+                            backdrop-filter: blur(10px);
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            color: white;
+                            z-index: 100000;
+                            font-family: 'Microsoft YaHei', sans-serif;
+                        ">
+                            <div style="
+                                background: rgba(15, 23, 42, 0.95);
+                                border: 2px solid rgba(79, 172, 254, 0.5);
+                                border-radius: 20px;
+                                padding: 3rem;
+                                text-align: center;
+                                max-width: 400px;
+                                animation: pulse 2s infinite;
+                            ">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">🚀</div>
+                                <h2 style="color: #4facfe; margin-bottom: 1rem;">准备自动导览</h2>
+                                <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">正在进入 <strong>${sceneName}</strong></p>
+                                <p style="opacity: 0.8; margin-bottom: 2rem;">系统将自动带您游览所有最佳观景点</p>
+                                <div style="
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 1rem;
+                                    margin-bottom: 1rem;
+                                ">
+                                    <div class="loading-dot" style="
+                                        width: 12px;
+                                        height: 12px;
+                                        background: #4facfe;
+                                        border-radius: 50%;
+                                        animation: bounce 1.4s infinite ease-in-out;
+                                    "></div>
+                                    <div class="loading-dot" style="
+                                        width: 12px;
+                                        height: 12px;
+                                        background: #00f2fe;
+                                        border-radius: 50%;
+                                        animation: bounce 1.4s infinite ease-in-out;
+                                        animation-delay: 0.2s;
+                                    "></div>
+                                    <div class="loading-dot" style="
+                                        width: 12px;
+                                        height: 12px;
+                                        background: #4facfe;
+                                        border-radius: 50%;
+                                        animation: bounce 1.4s infinite ease-in-out;
+                                        animation-delay: 0.4s;
+                                    "></div>
+                                </div>
+                                <div style="font-size: 0.9rem; opacity: 0.6;">
+                                    请稍候...
+                                </div>
+                            </div>
+                        </div>
+                        <style>
+                            @keyframes pulse {
+                                0%, 100% { transform: scale(1); }
+                                50% { transform: scale(1.02); }
+                            }
+                            @keyframes bounce {
+                                0%, 80%, 100% { transform: scale(0); }
+                                40% { transform: scale(1); }
+                            }
+                        </style>
+                    `;
+                    
+                    document.body.insertAdjacentHTML('beforeend', loadingHTML);
+                    
+                    // 5秒后自动移除（防止卡住）
+                    setTimeout(() => {
+                        const loading = document.getElementById('autotour-loading');
+                        if (loading) loading.remove();
+                    }, 5000);
+                }
+            }
+
+       // ==================== 修复版预览系统 ====================
+
+/**
+ * 初始化场景预览功能 - 修复版
+ */
+function initializeScenePreviews() {
+    console.log('🎯 开始为场景卡片添加预览功能...');
+    
+    // 确保预览系统已初始化
+    if (!window.previewSystem) {
+        window.previewSystem = new PreviewSystem();
+    }
+
+    const sceneCards = document.querySelectorAll('.scene-card');
+    console.log(`找到 ${sceneCards.length} 个场景卡片`);
+
+    sceneCards.forEach((card, index) => {
+        const sceneIds = ['lobby', 'reading-area', 'study-area'];
+        const sceneId = sceneIds[index];
+        
+        if (!sceneId) {
+            console.warn('❌ 未找到对应的场景ID:', index);
+            return;
+        }
+
+        console.log(`🔄 处理场景卡片 ${index + 1}:`, sceneId);
+
+        // 修复：添加预览按钮
+        this.addPreviewButtonToCard(card, sceneId);
+        
+        // 添加悬停效果（仅桌面端）
+        if (!this.isMobileDevice()) {
+            card.addEventListener('mouseenter', (e) => {
+                window.previewSystem.showHoverPreview(sceneId, card, e);
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                window.previewSystem.hideHoverPreview();
+            });
+        }
+
+        console.log(`✅ 为"${SCENE_DATA[sceneId]?.title}"添加预览功能`);
+    });
+}
+
+/**
+ * 为卡片添加预览按钮 - 修复版
+ */
+function addPreviewButtonToCard(card, sceneId) {
+    console.log(`🔄 为场景 ${sceneId} 添加预览按钮`);
+    
+    // 修复：使用更可靠的选择器
+    const viewBtn = card.querySelector('.view-btn');
+    if (!viewBtn) {
+        console.error('❌ 未找到进入按钮:', sceneId, card);
+        
+        // 备用方案：手动创建按钮容器
+        this.createFallbackButtonContainer(card, sceneId);
+        return;
+    }
+
+    // 创建按钮容器
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'card-button-container';
+
+    // 创建预览按钮
+    const previewBtn = document.createElement('button');
+    previewBtn.className = 'preview-button';
+    previewBtn.innerHTML = '👁️ 预览';
+    previewBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('📸 打开预览:', sceneId);
+        window.previewSystem.showDetailModal(sceneId);
+    };
+
+    // 调整原按钮
+    viewBtn.className = 'view-button primary';
+    viewBtn.textContent = '进入场景'; // 修复：确保文本内容
+    viewBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🚀 进入场景:', sceneId);
+        this.openDemo(sceneId, [['mode', '0']]);
+    };
+
+    // 组装按钮
+    buttonContainer.appendChild(previewBtn);
+    buttonContainer.appendChild(viewBtn);
+
+    // 替换原按钮
+    const cardContent = card.querySelector('.card-content');
+    if (cardContent) {
+        const oldViewBtn = cardContent.querySelector('.view-btn');
+        if (oldViewBtn && oldViewBtn.parentNode) {
+            oldViewBtn.parentNode.removeChild(oldViewBtn);
+        }
+        cardContent.appendChild(buttonContainer);
+        
+        console.log(`✅ 成功为 ${sceneId} 添加按钮容器`);
+    } else {
+        console.error('❌ 未找到卡片内容区域:', card);
+    }
+}
+
+
+
+/**
+ * 移动设备检测 - 修复版
+ */
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+/**
+ * 打开场景 - 修复版
+ */
+function openDemo(page, params) {
+    let url = page + '.html';
+    if (params && params.length > 0) {
+        let index = 0;
+        for (let param of params) {
+            url += (index === 0 ? "?" : "&");
+            url += param[0] + "=" + param[1];
+            index++;
+        }
+    }
+    console.log('🔗 导航到:', url);
+    window.location.href = url;
+}
+
+            // 为卡片添加预览按钮
+            function addPreviewButtonToCard(card, sceneId) {
+                const viewBtn = card.querySelector('.view-btn');
+                if (!viewBtn) {
+                    console.warn('❌ 未找到进入按钮:', sceneId);
+                    return;
+                }
+
+                // 创建按钮容器
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'card-button-container';
+
+                // 创建预览按钮
+                const previewBtn = document.createElement('button');
+                previewBtn.className = 'preview-button';
+                previewBtn.innerHTML = '👁️ 预览';
+                previewBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📸 打开预览:', sceneId);
+                    window.previewSystem.showDetailModal(sceneId);
+                };
+
+                // 调整原按钮
+                viewBtn.className = 'view-button primary';
+                viewBtn.onclick = (e) => {
+                    e.preventDefault();
+                    openDemo(sceneId, [['mode', '0']]);
+                };
+
+                // 组装按钮
+                buttonContainer.appendChild(previewBtn);
+                buttonContainer.appendChild(viewBtn);
+
+                // 替换原按钮
+                const cardContent = card.querySelector('.card-content');
+                const oldViewBtn = cardContent.querySelector('.view-btn');
+                if (oldViewBtn) {
+                    cardContent.removeChild(oldViewBtn);
+                }
+                cardContent.appendChild(buttonContainer);
+            }
+
+          // ==================== 修复版初始化代码 ====================
+
+// DOM加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM加载完成，初始化预览系统');
+    
+    // 延迟初始化以确保所有元素都已加载
+    setTimeout(() => {
+        try {
+            initializeScenePreviews();
+            
+            // 显示初始化成功消息
+            setTimeout(() => {
+                console.log('🎉 预览系统初始化成功！');
+                console.log('💡 使用方法：');
+                console.log('   - 鼠标悬停查看快速预览');
+                console.log('   - 点击"预览"按钮查看详情');
+                console.log('   - 点击"进入场景"开始体验');
+                console.log('   - 点击"自动导览"自动游览');
+                
+                // 调试信息
+                const cards = document.querySelectorAll('.scene-card');
+                cards.forEach((card, index) => {
+                    const buttons = card.querySelectorAll('button');
+                    console.log(`卡片 ${index + 1} 按钮数量:`, buttons.length);
+                });
+            }, 100);
+        } catch (error) {
+            console.error('❌ 预览系统初始化失败:', error);
+            // 备用初始化方案
+            fallbackInitialization();
+        }
+    }, 500);
+});
+
+// 备用初始化方案
+function fallbackInitialization() {
+    console.log('🔄 启动备用初始化方案');
+    
+    const sceneCards = document.querySelectorAll('.scene-card');
+    const sceneIds = ['lobby', 'reading-area', 'study-area'];
+    
+    sceneCards.forEach((card, index) => {
+        const sceneId = sceneIds[index];
+        if (!sceneId) return;
+        
+        // 直接创建按钮容器
+        createFallbackButtonContainer(card, sceneId);
+    });
+    
+    console.log('✅ 备用初始化完成');
+}
+
+// 备用初始化方法
+window.addEventListener('load', function() {
+    console.log('🔄 页面完全加载，检查预览系统');
+    
+    // 检查是否成功初始化
+    const buttonContainers = document.querySelectorAll('.card-button-container');
+    if (buttonContainers.length === 0) {
+        console.log('🔄 检测到初始化失败，重新初始化');
+        setTimeout(fallbackInitialization, 300);
+    }
+});
+
+            // ==================== 通用函数 ====================
+
+            function openDemo(page, params) {
+                let url = page + '.html';
+                if (params && params.length > 0) {
+                    let index = 0;
+                    for (let param of params) {
+                        url += (index === 0 ? "?" : "&");
+                        url += param[0] + "=" + param[1];
+                        index++;
+                    }
+                }
+                console.log('🔗 导航到:', url);
+                window.location.href = url;
+            }
+        </script>
+
+        <!-- 在所有HTML文件的body末尾添加 -->
+        <script src="js/page-transitions.js"></script>
+        <script src="js/performance.js"></script>
+        <script src="js/visit-stats.js"></script>
+        <script src="js/index_performance_panel.js"></script>
+        <script src="js/index_KeyboardNav.js"></script>
+
+   
+    </div>   
+    
+    
+    
+    <!-- 修改页脚内容 -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-logo">
+        <h3>北京印刷学院图书馆</h3>
+        <p>智慧图书馆服务平台</p>
+      </div>
+      <div class="footer-info">
+        <p><i class="fas fa-location-dot"></i> 北京市大兴区兴华大街(二段)1号</p>
+        <p><i class="fas fa-phone"></i> 010-60261114</p>
+        <p><i class="fas fa-envelope"></i> library@bigc.edu.cn</p>
+      </div>
+      <div class="footer-hours">
+        <p><i class="fas fa-clock"></i> 开放时间：周一至周日 8:00-22:00</p>
+        <p><i class="fas fa-book"></i> 借还服务：8:30-21:30</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 北京印刷学院图书馆 版权所有 </p>
+    </div>
+  </footer>
+</body>
+</html>

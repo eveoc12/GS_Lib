@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>北印图书馆 - 3D高斯模型展览</title>
+  <script type="text/javascript" src="js/util.js"></script>
+  <script type="importmap">
+    {
+        "imports": {
+            "three": "./lib/three.module.js",
+            "@mkkellogg/gaussian-splats-3d": "./lib/gaussian-splats-3d.module.js"
+        }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #000000;
+      height: 100vh;
+      margin: 0px;
+      font-family: 'Microsoft YaHei', sans-serif;
+      overflow: hidden;
+    }
+
+    /* 顶部导航栏 */
+    .model-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 97%;
+      background: rgba(10, 10, 10, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 14px;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .btn-icon {
+      font-size: 1.1rem;
+    }
+
+    .scene-title h2 {
+      font-weight: 400;
+      font-size: 1.5rem;
+      color: white;
+      margin: 0;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    /* 场景切换菜单 */
+    .scenes-menu {
+      position: fixed;
+      top: 80px;
+      right: -400px;
+      width: 300px;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 1.5rem;
+      transition: right 0.3s ease;
+      z-index: 99;
+    }
+
+    .scenes-menu.active {
+      right: 2rem;
+    }
+
+    .menu-content h3 {
+      margin-bottom: 1rem;
+      font-weight: 500;
+      color: white;
+    }
+
+    .menu-scenes {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .menu-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 12px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      text-align: left;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    .menu-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(-5px);
+    }
+
+    .menu-icon {
+      font-size: 1.2rem;
+    }
+
+    /* 信息面板 */
+    .info-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      transition: right 0.3s ease;
+      z-index: 98;
+    }
+
+    .info-panel.active {
+      right: 0;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .panel-header h3 {
+      color: white;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .panel-content {
+      padding: 1.5rem;
+      color: white;
+    }
+
+    .panel-content h4 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .panel-content p {
+      line-height: 1.6;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    /* 操作提示 */
+    .control-tips {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      gap: 2rem;
+      z-index: 10;
+    }
+
+    .tip-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .tip-key {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      min-width: 80px;
+      text-align: center;
+      color: white;
+    }
+
+    .tip-desc {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      color: white;
+    }
+
+    /* 加载状态 */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 0.3s ease;
+      color: white;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #4facfe;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .model-nav {
+        padding: 1rem;
+      }
+      
+      .nav-btn span:not(.btn-icon) {
+        display: none;
+      }
+      
+      .scenes-menu {
+        width: calc(100% - 2rem);
+        right: -100%;
+      }
+      
+      .info-panel {
+        width: 100%;
+        right: -100%;
+      }
+      
+      .control-tips {
+        bottom: 1rem;
+        padding: 0.8rem 1rem;
+        gap: 1rem;
+      }
+      
+      .tip-item {
+        min-width: 60px;
+      }
+    }
+
+    
+  </style>
+</head>
+
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="model-nav">
+    <button class="nav-btn back-btn" onclick="openDemo('index', [])">
+      <span class="btn-icon">←</span>
+      返回首页
+    </button>
+    
+    <div class="scene-title">
+      <h2 id="current-scene-title">北印图书馆</h2>
+    </div>
+
+    <div class="nav-actions">
+      <button class="nav-btn info-btn" onclick="toggleInfoPanel()">
+        <span class="btn-icon">ℹ️</span>
+        场景信息
+      </button>
+      <button class="nav-btn scenes-btn" onclick="toggleScenesMenu()">
+        <span class="btn-icon">🔍</span>
+        切换场景
+      </button>
+    </div>
+  </nav>
+
+  <!-- 场景切换菜单 -->
+  <div id="scenes-menu" class="scenes-menu">
+    <div class="menu-content">
+      <h3>选择探索区域</h3>
+      <div class="menu-scenes">
+        <button class="menu-item" onclick="openDemo('test', [['mode', '0']])">
+          <span class="menu-icon">🏛️</span>
+          图书馆大厅
+        </button>
+        <button class="menu-item" onclick="openDemo('truck', [['mode', '1']])">
+          <span class="menu-icon">📚</span>
+          阅读区
+        </button>
+        <button class="menu-item" onclick="openDemo('model', [['mode', '2']])">
+          <span class="menu-icon">💻</span>
+          自习区
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 信息面板 -->
+  <div id="info-panel" class="info-panel">
+    <div class="panel-header">
+      <h3>场景信息</h3>
+      <button class="close-btn" onclick="toggleInfoPanel()">×</button>
+    </div>
+    <div class="panel-content">
+      <div id="scene-info-content">
+        <h4 id="info-title">北印图书馆</h4>
+        <p id="info-description">这里是北印图书馆的3D高斯模型展示。采用先进的Gaussian Splatting技术，真实还原图书馆的建筑空间和细节。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作提示 -->
+  <div class="control-tips">
+    <div class="tip-item">
+      <span class="tip-key">鼠标拖动</span>
+      <span class="tip-desc">旋转视角</span>
+    </div>
+    <div class="tip-item">
+      <span class="tip-key">滚轮</span>
+      <span class="tip-desc">缩放</span>
+    </div>
+    <div class="tip-item">
+      <span class="tip-key">右键拖动</span>
+      <span class="tip-desc">平移</span>
+    </div>
+  </div>
+
+  <!-- 加载状态 -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>正在加载3D场景...</p>
+  </div>
+
+  <script>
+    // 导航函数
+    function openDemo(page, params) {
+      let url = page + '.html';
+      if (params && params.length > 0) {
+        let index = 0;
+        for (let param of params) {
+          url += (index === 0 ? "?" : "&");
+          url += param[0] + "=" + param[1];
+          index++;
+        }
+      }
+      window.location = url;
+    }
+
+    // UI控制函数
+    function toggleInfoPanel() {
+      const panel = document.getElementById('info-panel');
+      panel.classList.toggle('active');
+    }
+
+    function toggleScenesMenu() {
+      const menu = document.getElementById('scenes-menu');
+      menu.classList.toggle('active');
+    }
+
+    // 根据URL参数更新场景信息
+    function updateSceneInfo() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = parseInt(urlParams.get('mode')) || 0;
+      
+      const sceneConfig = {
+        0: {
+          title: '图书馆大厅',
+          description: '宏伟的图书馆大厅，展现了现代建筑美学与实用功能的完美结合。这里是读者进入知识世界的第一站，宽敞的空间和精心设计的光线营造出庄重而温馨的氛围。'
+        },
+        1: {
+          title: '阅读区',
+          description: '安静舒适的阅读区域，配备专业的阅读灯光和符合人体工学的座椅。这里是深度阅读和思考的理想空间，阳光透过窗户洒在书页上，营造出宁静的阅读体验。'
+        },
+        2: {
+          title: '自习区', 
+          description: '北印学子勤奋学习的核心区域。整齐排列的学习桌椅、充足的电源接口和稳定的网络环境，为学生们提供了高效的学习空间。这里见证了无数梦想的孕育和实现。'
+        }
+      };
+
+      const config = sceneConfig[mode] || sceneConfig[0];
+      document.getElementById('current-scene-title').textContent = config.title;
+      document.getElementById('info-title').textContent = config.title;
+      document.getElementById('info-description').textContent = config.description;
+    }
+
+    // 显示加载状态
+    function showLoading() {
+      const overlay = document.getElementById('loading-overlay');
+      overlay.classList.remove('hidden');
+    }
+
+    // 隐藏加载状态
+    function hideLoading() {
+      const overlay = document.getElementById('loading-overlay');
+      overlay.classList.add('hidden');
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      updateSceneInfo();
+      showLoading();
+    });
+
+    // 点击外部关闭菜单和面板
+    document.addEventListener('click', function(event) {
+      const scenesMenu = document.getElementById('scenes-menu');
+      const infoPanel = document.getElementById('info-panel');
+      
+      if (scenesMenu.classList.contains('active') && 
+          !event.target.closest('.scenes-menu') && 
+          !event.target.closest('.scenes-btn')) {
+        scenesMenu.classList.remove('active');
+      }
+    });
+  </script>
+
+  <script type="module">
+    import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
+    import * as THREE from 'three';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = parseInt(urlParams.get('mode')) || 0;
+
+    // 根据场景模式设置不同的相机参数
+    const sceneConfigs = {
+      0: { // 图书馆大厅
+        cameraUp: [0, -1, -0.54],
+        initialCameraPosition: [-3.15634, -0.16946, -0.51552],
+        initialCameraLookAt: [1.52976, 2.27776, 1.65898]
+      },
+      1: { // 阅读区
+        cameraUp: [0, -1, -0.54],
+        initialCameraPosition: [-2.5, -0.5, -1.0],
+        initialCameraLookAt: [1.0, 1.5, 1.0]
+      },
+      2: { // 自习区
+        cameraUp: [0, -1, -0.54],
+        initialCameraPosition: [-2.0, -0.3, -1.5],
+        initialCameraLookAt: [0.5, 1.0, 0.5]
+      }
+    };
+
+    const config = sceneConfigs[mode] || sceneConfigs[0];
+
+    const viewer = new GaussianSplats3D.Viewer({
+      'cameraUp': config.cameraUp,
+      'initialCameraPosition': config.initialCameraPosition,
+      'initialCameraLookAt': config.initialCameraLookAt,
+      'sphericalHarmonicsDegree': 2
+    });
+
+    // 根据模式加载对应的模型文件
+    let path = 'assets/data/test/test' + (mode ? '_high' : '') + '.splat';
+    
+    viewer.addSplatScene(path, {
+      'progressiveLoad': false
+    })
+    .then(() => {
+        viewer.start();
+        // 模型加载完成后隐藏加载状态
+        setTimeout(() => {
+            hideLoading();
+        }, 1000);
+    })
+    .catch((error) => {
+        console.error('模型加载失败:', error);
+        hideLoading();
+    });
+
+  </script>
+</body>
+
+</html>

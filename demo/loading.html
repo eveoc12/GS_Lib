@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加载中 - 北印图书馆3D展览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4facfe;
+            --secondary: #00f2fe;
+            --dark: #0a0a0a;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c0e14 0%, #151a24 50%, #1c2434 100%);
+            color: white;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* 浮动背景 */
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            opacity: 0.1;
+            filter: blur(40px);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
+        }
+
+        /* 加载容器 */
+        .loading-container {
+            text-align: center;
+            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem 4rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #fff 0%, #a0c8f8 50%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        /* 加载动画 */
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-bottom: 3px solid var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s ease-in-out infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 进度条 */
+        .progress-container {
+            width: 400px;
+            margin: 2rem auto 1rem;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+        }
+
+        .loading-text {
+            margin-top: 1.5rem;
+            font-size: 1rem;
+            opacity: 0.8;
+            min-height: 24px;
+        }
+
+        /* 跳过按钮 */
+        .skip-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .skip-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .loading-container {
+                padding: 2rem;
+                margin: 0 1rem;
+            }
+            
+            .logo h1 {
+                font-size: 2.5rem;
+            }
+            
+            .progress-container {
+                width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .progress-container {
+                width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动背景 -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <!-- 加载内容 -->
+    <div class="loading-container">
+        <div class="logo">
+            <h1>北印图书馆</h1>
+            <div class="subtitle">3D高斯泼溅 · 沉浸式展览</div>
+        </div>
+        
+        <!-- 加载动画 -->
+        <div class="loading-spinner"></div>
+        
+        <!-- 进度条 -->
+        <div class="progress-container">
+            <div class="progress-info">
+                <span>加载进度</span>
+                <span id="progress-percentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+        
+        <div class="loading-text" id="loading-text">正在初始化3D渲染环境...</div>
+    </div>
+
+    <script>
+        let progress = 0;
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercentage = document.getElementById('progress-percentage');
+        const loadingText = document.getElementById('loading-text');
+        
+        // 加载步骤
+        const loadSteps = [
+            { progress: 10, text: "正在初始化3D渲染环境..." },
+            { progress: 30, text: "加载核心渲染引擎..." },
+            { progress: 50, text: "准备高斯模型数据..." },
+            { progress: 70, text: "加载场景资源..." },
+            { progress: 90, text: "优化渲染性能..." },
+            { progress: 100, text: "加载完成！" }
+        ];
+        
+        let currentStep = 0;
+        
+        function updateProgress() {
+            if (currentStep < loadSteps.length) {
+                const step = loadSteps[currentStep];
+                progress = step.progress;
+                
+                progressFill.style.width = progress + '%';
+                progressPercentage.textContent = progress + '%';
+                loadingText.textContent = step.text;
+                
+                currentStep++;
+                
+                // 随机延迟
+                const delay = Math.random() * 600 + 300;
+                setTimeout(updateProgress, delay);
+            } else {
+                // 加载完成
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            }
+        }
+        
+        // 开始加载
+        setTimeout(updateProgress, 1000);
+        
+        // 8秒后显示跳过按钮
+        setTimeout(() => {
+            if (progress < 100) {
+                const skipBtn = document.createElement('button');
+                skipBtn.className = 'skip-btn';
+                skipBtn.textContent = '跳过加载';
+                skipBtn.onclick = () => {
+                    window.location.href = 'index.html';
+                };
+                document.querySelector('.loading-container').appendChild(skipBtn);
+            }
+        }, 8000);
+    </script>
+</body>
+</html>
